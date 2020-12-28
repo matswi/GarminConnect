@@ -76,7 +76,7 @@ function Get-GarminSleepData {
     }
 
     $sleepUri = $GarminActivityUri.Sleep + $UserDisplayName + "?date=" + $date
-    # $tempSleepUri = "https://connect.garmin.com/modern/proxy/wellness-service/wellness/dailySleepData/mats.w?date=2020-12-28"
+    
     $sleepData = Invoke-RestMethod -Uri $sleepUri -Method Get -WebSession $loginSession -Headers $headers
 
     return $sleepData
