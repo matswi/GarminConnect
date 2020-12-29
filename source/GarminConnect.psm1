@@ -28,12 +28,12 @@ function New-GarminConnectLogin {
         [Parameter(Mandatory, ParameterSetName = "UserName")]
         [string]$UserName,
         [Parameter(Mandatory, ParameterSetName = "UserName")]
-        [String]$Password
+        [SecureString]$Password
     )
 
     if ($pscmdlet.ParameterSetName -eq "Credential") {
         $UserName = $Credential.UserName
-        $Password = $Credential.GetNetworkCredential().Password
+        [string]$Password = $Credential.GetNetworkCredential().Password
     }
 
     $initialLogin = Invoke-RestMethod -Uri $GarminUri.SignIn -Method Get -SessionVariable loginSession
