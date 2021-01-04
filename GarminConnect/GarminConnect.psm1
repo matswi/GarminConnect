@@ -19,6 +19,30 @@ $Headers = @{
 
 New-Variable -Name Headers -Value $Headers -Scope Script -Force
 
+function GetUserData {
+    
+    [CmdLetBinding()]
+    Param (
+        [Parameter(Mandatory)]
+        [Object[]]$Response
+    )
+
+    [xml]$xml = $response.InnerXml
+    
+    $null = $xml.html.InnerText -match 'window.VIEWER_SOCIAL_PROFILE = JSON.parse\(\"(.*)\"\)'
+    $socialProfile = $Matches[1].Replace('\','') | ConvertFrom-Json
+
+    $UserData = @{
+        profileId   = $socialProfile.profileId
+        garminGUID  = $socialProfile.garminGUID
+        displayName  = $socialProfile.displayName
+        fullName    = $socialProfile.fullName
+        userName    = $socialProfile.userName
+    }
+    
+    New-Variable -Name UserData -Value $UserData -Scope Script -Force
+}
+
 function New-GarminConnectLogin {
 
     [CmdletBinding()]
@@ -46,6 +70,8 @@ function New-GarminConnectLogin {
         $responseUri = $GarminUri.Modern + "/import-data"
         $response = Invoke-RestMethod -Uri $responseUri -Method Get -WebSession $loginSession -Headers $Headers
 
+        GetUserData -Response $response
+
         if ($response.html.class -eq "signed-in") {
 
             $script:loginSession = $loginSession
@@ -62,8 +88,6 @@ function Get-GarminSleepData {
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
-        [String]$UserDisplayName,
         [Parameter()]
         [string]$Date
     )
@@ -75,7 +99,7 @@ function Get-GarminSleepData {
         $date = Get-Date -Format yyyy-MM-dd
     }
 
-    $sleepUri = $GarminActivityUri.Sleep + $UserDisplayName + "?date=" + $date
+    $sleepUri = $GarminActivityUri.Sleep + $UserData.displayName + "?date=" + $date
     
     $sleepData = Invoke-RestMethod -Uri $sleepUri -Method Get -WebSession $loginSession -Headers $headers
 
