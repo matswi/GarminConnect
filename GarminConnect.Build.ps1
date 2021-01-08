@@ -6,8 +6,8 @@ task Package {
     New-Item -ItemType directory -Path $PSScriptRoot\out
     New-Item -ItemType directory -Path $PSScriptRoot\out\GarminConnect
 
-    Copy-Item -Path "$PSScriptRoot\src\GarminConnect.psd1" -Destination "$PSScriptRoot\out\GarminConnect\" -Force
-    Copy-Item -Path "$PSScriptRoot\src\GarminConnect.psm1" -Destination "$PSScriptRoot\out\GarminConnect\" -Force -Recurse
+    Copy-Item -Path "$PSScriptRoot\source\GarminConnect.psd1" -Destination "$PSScriptRoot\out\GarminConnect\" -Force
+    Copy-Item -Path "$PSScriptRoot\source\GarminConnect.psm1" -Destination "$PSScriptRoot\out\GarminConnect\" -Force -Recurse
 
 }
 

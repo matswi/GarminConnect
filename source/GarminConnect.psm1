@@ -9,8 +9,7 @@ New-Variable -Name GarminUri -Value $GarminUri -Scope Script -Force
 $GarminActivityUri = @{
     
     Activities = $GarminUri.Modern + "/proxy/activitylist-service/activities/search/activities/"
-    Devices = $GarminUri.Modern + "/proxy/device-service/deviceregistration/devices/"
-    DeviceSettings = $GarminUri.Modern + "/proxy/device-service/deviceservice/device-info/settings/"
+    
 }
 New-Variable -Name GarminActivityUri -Value $GarminActivityUri -Scope Script -Force
 
@@ -35,17 +34,14 @@ function GetUserData {
     $null = $xml.html.InnerText -match 'window.VIEWER_SOCIAL_PROFILE = JSON.parse\(\"(.*)\"\)'
     $socialProfile = $Matches[1].Replace('\','') | ConvertFrom-Json
 
-    $UserData = @{
-        profileId   = $socialProfile.profileId
-        garminGUID  = $socialProfile.garminGUID
-        displayName  = $socialProfile.displayName
-        fullName    = $socialProfile.fullName
-        userName    = $socialProfile.userName
+    $UserData = [PSCustomObject]@{
+        profileId       = $socialProfile.profileId
+        garminGUID      = $socialProfile.garminGUID
+        displayName     = $socialProfile.displayName
+        fullName        = $socialProfile.fullName
+        userName        = $socialProfile.userName
     }
-    
-    New-Variable -Name UserData -Value $UserData -Scope Script -Force
-
-    return $UserData
+    New-Variable -Name UserData -Value $UserData -Scope Script -ForceS
 }
 
 function InvokeGarminApi {
@@ -110,8 +106,7 @@ function New-GarminConnectLogin {
         if ($response.html.class -eq "signed-in") {
 
             $script:loginSession = $loginSession
-            #return $true
-            return $userInfo
+            return $true
         }
         else {
             return $false
