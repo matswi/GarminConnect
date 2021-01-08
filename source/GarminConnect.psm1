@@ -55,6 +55,7 @@ function InvokeGarminApi {
         [Parameter(Mandatory)]
         $Fragment,
         [Parameter(Mandatory)]
+        [ValidateSet("Get","Post")]
         $Method
     )
 
