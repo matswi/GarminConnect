@@ -109,7 +109,8 @@ function Get-GarminSleepData {
     }
     
     $sleepUri = $GarminActivityUri.Sleep + $UserData.displayName + "/?date=" + $date
-    
+    Write-Verbose "Fetching sleep data from uri: $sleepUri"
+
     $sleepData = Invoke-RestMethod -Uri $sleepUri -Method Get -WebSession $loginSession -Headers $headers
 
     return $sleepData
@@ -129,6 +130,7 @@ function Get-GarminHeartRate {
     }
 
     $heartRateUri = $GarminActivityUri.HeartRate + $UserData.displayName + "/?date=" + $date
+    Write-Verbose "Fetching heart rate data from uri: $heartRateUri"
 
     $heartRateData = Invoke-RestMethod -Uri $heartRateUri -Method Get -WebSession $loginSession -Headers $headers
     
