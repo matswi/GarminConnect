@@ -97,7 +97,7 @@ function New-GarminConnectLogin {
         $response = Invoke-RestMethod -Uri $responseUri -Method Get -WebSession $loginSession -Headers $Headers
 
         try {
-            $userInfo = GetUserData -Response $response
+            $null = GetUserData -Response $response
         }
         catch {
             throw "Failed to get user data. Error: $($_.Exception.Message)"
