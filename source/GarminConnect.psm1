@@ -7,8 +7,7 @@ $GarminUri = @{
 New-Variable -Name GarminUri -Value $GarminUri -Scope Script -Force
 
 $GarminActivityUri = @{
-    Sleep = $GarminUri.Modern + "/proxy/wellness-service/wellness/dailySleepData/"
-    HeartRate = $GarminUri.Modern + "/proxy/wellness-service/wellness/dailyHeartRate/"
+    
     Activities = $GarminUri.Modern + "/proxy/activitylist-service/activities/search/activities/"
     Devices = $GarminUri.Modern + "/proxy/device-service/deviceregistration/devices/"
     DeviceSettings = $GarminUri.Modern + "/proxy/device-service/deviceservice/device-info/settings/"
@@ -47,6 +46,30 @@ function GetUserData {
     New-Variable -Name UserData -Value $UserData -Scope Script -Force
 
     return $UserData
+}
+
+function InvokeGarminApi {
+    
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        $Fragment,
+        [Parameter(Mandatory)]
+        $Method
+    )
+
+    if (-not $loginSession) {
+        Throw "No websession, run New-GarminConnectLogin first."
+    }
+
+    $Params = @{
+        Uri = '{0}/{1}' -f $GarminUri.Modern, $Fragment
+        Method = $Method
+        Headers = $Headers
+        WebSession = $loginSession
+    }
+
+    Invoke-RestMethod @Params
 }
 
 function New-GarminConnectLogin {
@@ -108,12 +131,9 @@ function Get-GarminSleepData {
         $date = Get-Date -Format yyyy-MM-dd
     }
     
-    $sleepUri = $GarminActivityUri.Sleep + $UserData.displayName + "/?date=" + $date
-    Write-Verbose "Fetching sleep data from uri: $sleepUri"
-
-    $sleepData = Invoke-RestMethod -Uri $sleepUri -Method Get -WebSession $loginSession -Headers $headers
-
-    return $sleepData
+    $fragment = "proxy/wellness-service/wellness/dailySleepData/" + $UserData.displayName + "/?date=" + $date
+    
+    InvokeGarminApi -Fragment $fragment -Method Get
     
 }
 
@@ -129,11 +149,53 @@ function Get-GarminHeartRate {
         $date = Get-Date -Format yyyy-MM-dd
     }
 
-    $heartRateUri = $GarminActivityUri.HeartRate + $UserData.displayName + "/?date=" + $date
-    Write-Verbose "Fetching heart rate data from uri: $heartRateUri"
+    $fragment = "proxy/wellness-service/wellness/dailyHeartRate/" + $UserData.displayName + "/?date=" + $date
+    
+    InvokeGarminApi -Fragment $fragment -Method Get
+}
 
-    $heartRateData = Invoke-RestMethod -Uri $heartRateUri -Method Get -WebSession $loginSession -Headers $headers
+function Get-GarminActivities {
     
-    return $heartRateData
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        $Date    
+    )
+
+    if (-not $Date) {
+        $date = Get-Date -Format yyyy-MM-dd
+    }
+
+    $fragment = "proxy/activitylist-service/activities/search/activities/" + $UserData.displayName + "/?date=" + $date
     
+    InvokeGarminApi -Fragment $fragment -Method Get
+}
+
+function Get-GarminDevice {
+    
+    [CmdletBinding()]
+    param (
+            
+    )
+
+    if (-not $Date) {
+        $date = Get-Date -Format yyyy-MM-dd
+    }
+
+    $fragment = "proxy/device-service/deviceregistration/devices/"
+    
+    InvokeGarminApi -Fragment $fragment -Method Get
+}
+
+function Get-GarminDeviceSetting {
+    
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        $DeviceId
+    )
+
+    $fragment = "proxy/device-service/deviceservice/device-info/settings/" + $DeviceId
+    
+    InvokeGarminApi -Fragment $fragment -Method Get
 }
