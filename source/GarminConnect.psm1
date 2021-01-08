@@ -8,6 +8,10 @@ New-Variable -Name GarminUri -Value $GarminUri -Scope Script -Force
 
 $GarminActivityUri = @{
     Sleep = $GarminUri.Modern + "/proxy/wellness-service/wellness/dailySleepData/"
+    HeartRate = $GarminUri.Modern + "/proxy/wellness-service/wellness/dailyHeartRate/"
+    Activities = $GarminUri.Modern + "/proxy/activitylist-service/activities/search/activities/"
+    Devices = $GarminUri.Modern + "/proxy/device-service/deviceregistration/devices/"
+    DeviceSettings = $GarminUri.Modern + "/proxy/device-service/deviceservice/device-info/settings/"
 }
 New-Variable -Name GarminActivityUri -Value $GarminActivityUri -Scope Script -Force
 
@@ -41,6 +45,8 @@ function GetUserData {
     }
     
     New-Variable -Name UserData -Value $UserData -Scope Script -Force
+
+    return $UserData
 }
 
 function New-GarminConnectLogin {
@@ -70,12 +76,18 @@ function New-GarminConnectLogin {
         $responseUri = $GarminUri.Modern + "/import-data"
         $response = Invoke-RestMethod -Uri $responseUri -Method Get -WebSession $loginSession -Headers $Headers
 
-        GetUserData -Response $response
+        try {
+            $userInfo = GetUserData -Response $response
+        }
+        catch {
+            throw "Failed to get user data. Error: $($_.Exception.Message)"
+        }
 
         if ($response.html.class -eq "signed-in") {
 
             $script:loginSession = $loginSession
-            return $true
+            #return $true
+            return $userInfo
         }
         else {
             return $false
@@ -92,17 +104,34 @@ function Get-GarminSleepData {
         [string]$Date
     )
 
-    if ($date) {
-
-    }
-    else {
+    if (-not $date) {
         $date = Get-Date -Format yyyy-MM-dd
     }
-
-    $sleepUri = $GarminActivityUri.Sleep + $UserData.displayName + "?date=" + $date
+    
+    $sleepUri = $GarminActivityUri.Sleep + $UserData.displayName + "/?date=" + $date
     
     $sleepData = Invoke-RestMethod -Uri $sleepUri -Method Get -WebSession $loginSession -Headers $headers
 
     return $sleepData
+    
+}
 
+function Get-GarminHeartRate {
+    
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        $Date    
+    )
+
+    if (-not $Date) {
+        $date = Get-Date -Format yyyy-MM-dd
+    }
+
+    $heartRateUri = $GarminActivityUri.HeartRate + $UserData.displayName + "/?date=" + $date
+
+    $heartRateData = Invoke-RestMethod -Uri $heartRateUri -Method Get -WebSession $loginSession -Headers $headers
+    
+    return $heartRateData
+    
 }
