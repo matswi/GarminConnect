@@ -41,7 +41,7 @@ function GetUserData {
         fullName        = $socialProfile.fullName
         userName        = $socialProfile.userName
     }
-    New-Variable -Name UserData -Value $UserData -Scope Script -ForceS
+    New-Variable -Name UserData -Value $UserData -Scope Script -Force
 }
 
 function InvokeGarminApi {
